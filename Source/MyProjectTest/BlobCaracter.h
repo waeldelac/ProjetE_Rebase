@@ -11,10 +11,10 @@
 UENUM(BlueprintType)
 enum class E_ARCANE : uint8
 {
-	MANIPULATE UMETA(DisplayName = "^Mainipulate"),
-	CONJURATE UMETA(DisplayName = "^Conjurate"),
-	TRANSMUTATE UMETA(DisplayName = "^Transmutate"),
-	TRANSFERT UMETA(DisplayName = "^Transfert"),
+	MANIPULATE UMETA(DisplayName = "Manipulate"),
+	CONJURATE UMETA(DisplayName = "Conjurate"),
+	TRANSMUTATE UMETA(DisplayName = "Transmutate"),
+	TRANSFERT UMETA(DisplayName = "Transfert"),
 
 };
 
@@ -45,6 +45,16 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
 	E_ELEMENT ElementSelection;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
+	E_MOUSECLICK MouseClickState;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
+	TScriptInterface<IBlobInterface> BlobArcaneTarget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
+	bool bLockTarget;
+
 
 
 protected:

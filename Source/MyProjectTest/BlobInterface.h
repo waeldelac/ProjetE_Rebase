@@ -8,7 +8,7 @@
 #include "BlobInterface.generated.h"
 
 // This class does not need to be modified.
-UINTERFACE(meta = (CannotImplementInterfaceInBlueprint))
+UINTERFACE(NotBlueprintable)
 class UBlobInterface : public UInterface
 {
 	GENERATED_BODY()
