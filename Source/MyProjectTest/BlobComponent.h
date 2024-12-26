@@ -42,21 +42,21 @@ enum class E_INTERRACTION_TYPE : uint8
 
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FBlobElement
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	E_ELEMENT Element;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	E_PLAYABLE Playability;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	E_MAPPED_AUTHORIZATION  Authorization;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 Value;
 };
 
@@ -81,7 +81,7 @@ class MYPROJECTTEST_API UBlobComponent : public UActorComponent
 
 	UBlobComponent();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TArray<UBlobComponent*> BlobListInInterraction;
 
 
@@ -95,8 +95,7 @@ protected:
 public:	
 		/** Please add a variable description */
 
-	
-	UPROPERTY(Replicated)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TArray<FBlobElement> Composition;
 	//TMap<E_ELEMENT, int> composition;
 	UPROPERTY()
