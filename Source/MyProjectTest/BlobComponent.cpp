@@ -22,40 +22,25 @@ UBlobComponent::UBlobComponent()
 	}
 
 
-	EarthInterraction = CreateDefaultSubobject<UElementTargetInteraction>(TEXT("EarthInteraction"));
-	//Defining Earth interraction 
-	EarthInterraction->ElementInterraction.Add(E_ELEMENT::EARTH, E_INTERRACTION_TYPE::COLLISION);
-	EarthInterraction->ElementInterraction.Add(E_ELEMENT::WATER, E_INTERRACTION_TYPE::NOTHING_HAPPEN);
-	EarthInterraction->ElementInterraction.Add(E_ELEMENT::FIRE, E_INTERRACTION_TYPE::TRANSFERT_TO_NEXT_ELEM);
-	EarthInterraction->ElementInterraction.Add(E_ELEMENT::AIR, E_INTERRACTION_TYPE::DESTROY);
-	InterractionMapping.Add(E_ELEMENT::EARTH, EarthInterraction);
+	InteractionMatrix[static_cast<int32>(E_ELEMENT::EARTH)][static_cast<int32>(E_ELEMENT::EARTH)] = E_INTERRACTION_TYPE::COLLISION;
+	InteractionMatrix[static_cast<int32>(E_ELEMENT::EARTH)][static_cast<int32>(E_ELEMENT::WATER)] = E_INTERRACTION_TYPE::NOTHING_HAPPEN;
+	InteractionMatrix[static_cast<int32>(E_ELEMENT::EARTH)][static_cast<int32>(E_ELEMENT::FIRE)] = E_INTERRACTION_TYPE::TRANSFERT_TO_NEXT_ELEM;
+	InteractionMatrix[static_cast<int32>(E_ELEMENT::EARTH)][static_cast<int32>(E_ELEMENT::AIR)] = E_INTERRACTION_TYPE::DESTROY;
 
+	InteractionMatrix[static_cast<int32>(E_ELEMENT::WATER)][static_cast<int32>(E_ELEMENT::EARTH)] = E_INTERRACTION_TYPE::NOTHING_HAPPEN;
+	InteractionMatrix[static_cast<int32>(E_ELEMENT::WATER)][static_cast<int32>(E_ELEMENT::WATER)] = E_INTERRACTION_TYPE::NOTHING_HAPPEN;
+	InteractionMatrix[static_cast<int32>(E_ELEMENT::WATER)][static_cast<int32>(E_ELEMENT::FIRE)] = E_INTERRACTION_TYPE::AIR_TRANSFORMATION;
+	InteractionMatrix[static_cast<int32>(E_ELEMENT::WATER)][static_cast<int32>(E_ELEMENT::AIR)] = E_INTERRACTION_TYPE::ICE_GENERATION;
 
-	//Defining Water interraction 
-	WaterInterraction = CreateDefaultSubobject<UElementTargetInteraction>(TEXT("WaterInteraction"));
-	WaterInterraction->ElementInterraction.Add(E_ELEMENT::EARTH, E_INTERRACTION_TYPE::NOTHING_HAPPEN);
-	WaterInterraction->ElementInterraction.Add(E_ELEMENT::WATER, E_INTERRACTION_TYPE::NOTHING_HAPPEN);
-	WaterInterraction->ElementInterraction.Add(E_ELEMENT::FIRE, E_INTERRACTION_TYPE::GAIN);
-	WaterInterraction->ElementInterraction.Add(E_ELEMENT::AIR, E_INTERRACTION_TYPE::NOTHING_HAPPEN);//Glace ?
-	InterractionMapping.Add(E_ELEMENT::WATER, WaterInterraction);
+	InteractionMatrix[static_cast<int32>(E_ELEMENT::FIRE)][static_cast<int32>(E_ELEMENT::EARTH)] = E_INTERRACTION_TYPE::TRANSFERT_TO_NEXT_ELEM;
+	InteractionMatrix[static_cast<int32>(E_ELEMENT::FIRE)][static_cast<int32>(E_ELEMENT::WATER)] = E_INTERRACTION_TYPE::DESTROY;
+	InteractionMatrix[static_cast<int32>(E_ELEMENT::FIRE)][static_cast<int32>(E_ELEMENT::FIRE)] = E_INTERRACTION_TYPE::NOTHING_HAPPEN;
+	InteractionMatrix[static_cast<int32>(E_ELEMENT::FIRE)][static_cast<int32>(E_ELEMENT::AIR)] = E_INTERRACTION_TYPE::FIRE_GENERATION;
 
-
-	//Defining Fire interraction 
-	FireInterraction = CreateDefaultSubobject<UElementTargetInteraction>(TEXT("FireInteraction"));
-	FireInterraction->ElementInterraction.Add(E_ELEMENT::EARTH, E_INTERRACTION_TYPE::TRANSFERT_TO_NEXT_ELEM);
-	FireInterraction->ElementInterraction.Add(E_ELEMENT::WATER, E_INTERRACTION_TYPE::DESTROY);
-	FireInterraction->ElementInterraction.Add(E_ELEMENT::FIRE, E_INTERRACTION_TYPE::NOTHING_HAPPEN);
-	FireInterraction->ElementInterraction.Add(E_ELEMENT::AIR, E_INTERRACTION_TYPE::GAIN);
-	InterractionMapping.Add(E_ELEMENT::FIRE, FireInterraction);
-
-
-	//Defining Air interraction 
-	AirInterraction = CreateDefaultSubobject<UElementTargetInteraction>(TEXT("AirInteraction"));
-	AirInterraction->ElementInterraction.Add(E_ELEMENT::EARTH, E_INTERRACTION_TYPE::NOTHING_HAPPEN);
-	AirInterraction->ElementInterraction.Add(E_ELEMENT::WATER, E_INTERRACTION_TYPE::NOTHING_HAPPEN);
-	AirInterraction->ElementInterraction.Add(E_ELEMENT::FIRE, E_INTERRACTION_TYPE::DESTROY);
-	AirInterraction->ElementInterraction.Add(E_ELEMENT::AIR, E_INTERRACTION_TYPE::NOTHING_HAPPEN);//Foudre? 
-	InterractionMapping.Add(E_ELEMENT::AIR, AirInterraction);
+	InteractionMatrix[static_cast<int32>(E_ELEMENT::AIR)][static_cast<int32>(E_ELEMENT::EARTH)] = E_INTERRACTION_TYPE::NOTHING_HAPPEN;
+	InteractionMatrix[static_cast<int32>(E_ELEMENT::AIR)][static_cast<int32>(E_ELEMENT::WATER)] = E_INTERRACTION_TYPE::NOTHING_HAPPEN;
+	InteractionMatrix[static_cast<int32>(E_ELEMENT::AIR)][static_cast<int32>(E_ELEMENT::FIRE)] = E_INTERRACTION_TYPE::DESTROY;
+	InteractionMatrix[static_cast<int32>(E_ELEMENT::AIR)][static_cast<int32>(E_ELEMENT::AIR)] = E_INTERRACTION_TYPE::THUNDER_GENERATION;
 
 }
 
@@ -80,10 +65,11 @@ void UBlobComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	for (auto TargetBlobComponent : BlobListInInterraction)
+	for (auto TargetBlobComponent : OverlappingBlobs)
 	{
 		if (TargetBlobComponent != NULL)
 		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Interraction")));
 			manageOnHitInteraction(TargetBlobComponent);
 		}
 	}
@@ -207,20 +193,20 @@ void UBlobComponent::manageOnHitInteraction(UBlobComponent* TargetBlobComponent)
 					switch (interractionToApply)
 					{
 					case E_INTERRACTION_TYPE::COLLISION:
-						shouldBreak = true;
-						break;
-					case E_INTERRACTION_TYPE::TRANSFERT_TO_NEXT_ELEM:
-						break;
 					case E_INTERRACTION_TYPE::NOTHING_HAPPEN:
-						shouldBreak = true;
+						return;
+					case E_INTERRACTION_TYPE::TRANSFERT_TO_NEXT_ELEM:
 						break;
 					case E_INTERRACTION_TYPE::DESTROY:
 						decrementElemValue(1, myComposition.Element);
-						shouldBreak = true;
-						break;
-					case E_INTERRACTION_TYPE::GAIN:
-						shouldBreak = true;
-						break;
+						return;
+					case E_INTERRACTION_TYPE::AIR_TRANSFORMATION:
+						incrementElemValue(1, E_ELEMENT::AIR);
+						decrementElemValue(1, myComposition.Element);
+						return;
+					case E_INTERRACTION_TYPE::FIRE_GENERATION:
+						incrementElemValue(1, E_ELEMENT::FIRE);
+						return;
 					default:
 						break;
 					}
@@ -230,9 +216,28 @@ void UBlobComponent::manageOnHitInteraction(UBlobComponent* TargetBlobComponent)
 	}
 }
 
-E_INTERRACTION_TYPE UBlobComponent::determineInteraction(E_ELEMENT elementBlob1, E_ELEMENT elementBlob2) {
+void UBlobComponent::addBlobInterraction(AActor* Actor)
+{
+	UBlobComponent* TargetBlobComponent = Cast<IBlobInterface>(Actor)->getBlobComponent();
 
-	return *(**InterractionMapping.Find(elementBlob1)).ElementInterraction.Find(elementBlob2);
+	if (TargetBlobComponent && !OverlappingBlobs.Contains(TargetBlobComponent))
+	{
+		OverlappingBlobs.Add(TargetBlobComponent);
+	}
+}
+
+void UBlobComponent::removeBlobInterraction(AActor* Actor)
+{
+	UBlobComponent* TargetBlobComponent = Cast<IBlobInterface>(Actor)->getBlobComponent();
+	if (TargetBlobComponent && !OverlappingBlobs.Contains(TargetBlobComponent))
+	{
+		OverlappingBlobs.Remove(TargetBlobComponent);
+	}
+}
+
+E_INTERRACTION_TYPE UBlobComponent::determineInteraction(E_ELEMENT ElementBlob1, E_ELEMENT ElementBlob2) {
+
+	return InteractionMatrix[static_cast<int32>(ElementBlob1)][static_cast<int32>(ElementBlob2)];
 
 }
 

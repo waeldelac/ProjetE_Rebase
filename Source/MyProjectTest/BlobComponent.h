@@ -4,6 +4,7 @@
 
 #include "Net/UnrealNetwork.h"
 #include "Element.h"
+#include "BlobInterface.h"
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "BlobComponent.generated.h"
@@ -38,7 +39,10 @@ enum class E_INTERRACTION_TYPE : uint8
 	TRANSFERT_TO_NEXT_ELEM,
 	NOTHING_HAPPEN,
 	DESTROY,
-	GAIN
+	AIR_TRANSFORMATION,
+	FIRE_GENERATION,
+	ICE_GENERATION,
+	THUNDER_GENERATION
 
 };
 
@@ -60,14 +64,6 @@ struct FBlobElement
 	int32 Value;
 };
 
-UCLASS()
-class UElementTargetInteraction : public UObject
-{
-	GENERATED_BODY()
-
-public:
-	TMap<E_ELEMENT, E_INTERRACTION_TYPE> ElementInterraction;
-};
 
 
 
@@ -82,7 +78,7 @@ class MYPROJECTTEST_API UBlobComponent : public UActorComponent
 	UBlobComponent();
 
 	UPROPERTY(EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	TArray<UBlobComponent*> BlobListInInterraction;
+	TArray<UBlobComponent*> OverlappingBlobs;
 
 
 
@@ -98,13 +94,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TArray<FBlobElement> Composition;
 	//TMap<E_ELEMENT, int> composition;
-	UPROPERTY()
-	TMap<E_ELEMENT, UElementTargetInteraction*> InterractionMapping;
 
-	UElementTargetInteraction* EarthInterraction;
-	UElementTargetInteraction* WaterInterraction;
-	UElementTargetInteraction* FireInterraction;
-	UElementTargetInteraction* AirInterraction;
+	E_INTERRACTION_TYPE InteractionMatrix[static_cast<int32>(4)][static_cast<int32>(4)];
 
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -127,6 +118,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void manageOnHitInteraction(UBlobComponent* TargetBlobComponent);
+
+	UFUNCTION(BlueprintCallable)
+	void addBlobInterraction(AActor* Actor);
+
+	UFUNCTION(BlueprintCallable)
+	void removeBlobInterraction(AActor* Actor);
 
 	UFUNCTION()
 	E_INTERRACTION_TYPE determineInteraction(E_ELEMENT elementBlob1, E_ELEMENT elementBlob2);

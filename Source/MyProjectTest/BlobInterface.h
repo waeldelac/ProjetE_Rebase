@@ -3,9 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BlobComponent.h"
 #include "UObject/Interface.h"
 #include "BlobInterface.generated.h"
+
+class UBlobComponent;
 
 // This class does not need to be modified.
 UINTERFACE(NotBlueprintable)

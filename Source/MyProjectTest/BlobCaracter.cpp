@@ -38,14 +38,13 @@ void ABlobCaracter::Tick(float DeltaTime)
 		FHitResult result;
 
 		APlayerController* PlayerController = Cast<APlayerController>(Controller);
-		PlayerController->GetHitResultUnderCursor(ECC_Pawn, false, result);
+		PlayerController->GetHitResultUnderCursor(ECC_Visibility, false, result);
 		//if (result.GetActor()->GetClass()->ImplementsInterface(UBlobInterface::StaticClass()))
 		//{
 		TScriptInterface<IBlobInterface> NewBlobSelected;
 
 		if (result.GetActor() != NULL && result.GetActor()->GetClass()->ImplementsInterface(UBlobInterface::StaticClass()))
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Hello2")));
 			NewBlobSelected.SetObject(result.GetActor());
 			NewBlobSelected.SetInterface(Cast<IBlobInterface>(result.GetActor()));
 		}

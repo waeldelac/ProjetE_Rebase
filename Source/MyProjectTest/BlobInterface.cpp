@@ -2,5 +2,5 @@
 
 
 #include "BlobInterface.h"
-
+#include "BlobComponent.h"
 // Add default functionality here for any IBlobInterface functions that are not pure virtual.
