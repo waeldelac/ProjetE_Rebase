@@ -6,14 +6,14 @@
 #include "UObject/NoExportTypes.h"
 
 
-UENUM()
+UENUM(BlueprintType)
 enum class E_ELEMENT : uint8
 {
-    EARTH = 0,
-    WATER = 1,
-    FIRE = 2,
-    AIR = 3,
-    ETHER = 4
+    EARTH UMETA(DisplayName = "EARTH"),
+    WATER UMETA(DisplayName = "WATER"),
+    FIRE UMETA(DisplayName = "FIRE"),
+    AIR UMETA(DisplayName = "AIR"),
+    ETHER UMETA(DisplayName = "ETHER")
 };
 
 

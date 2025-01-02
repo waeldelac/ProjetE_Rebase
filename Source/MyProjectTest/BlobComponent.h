@@ -5,9 +5,9 @@
 #include "Net/UnrealNetwork.h"
 #include "Element.h"
 #include "BlobInterface.h"
-#include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "BlobComponent.generated.h"
+
 
 
 
@@ -32,19 +32,7 @@ enum class E_MAPPED_AUTHORIZATION : uint8
 
 };
 
-UENUM()
-enum class E_INTERRACTION_TYPE : uint8
-{
-	COLLISION = 0,
-	TRANSFERT_TO_NEXT_ELEM,
-	NOTHING_HAPPEN,
-	DESTROY,
-	AIR_TRANSFORMATION,
-	FIRE_GENERATION,
-	ICE_GENERATION,
-	THUNDER_GENERATION
 
-};
 
 USTRUCT(BlueprintType)
 struct FBlobElement
@@ -64,6 +52,39 @@ struct FBlobElement
 	int32 Value;
 };
 
+/*
+USTRUCT()
+struct FPendingInteraction
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	TArray<FPendingInteractionItem> PendingInteraction;
+};
+
+USTRUCT()
+struct FPendingInteractionItem
+{
+	GENERATED_BODY()
+
+	// Liste des interactions à effectuer
+	UPROPERTY()
+	E_INTERRACTION_TYPE PendingInteraction;
+	UPROPERTY()
+	E_ELEMENT Element;
+	UPROPERTY()
+	int32 TimeStamp;
+
+
+	FPendingInteractionItem(E_INTERRACTION_TYPE InPendingInteraction, E_ELEMENT InElement, int32 InTimeStamp)
+		: PendingInteraction(InPendingInteraction)
+		, Element(InElement)
+		, TimeStamp(InTimeStamp)
+	{
+	}
+
+};*/
+
 
 
 
@@ -77,8 +98,14 @@ class MYPROJECTTEST_API UBlobComponent : public UActorComponent
 
 	UBlobComponent();
 
+	/*UPROPERTY(EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	TMap<UBlobComponent*, E_INTERACTION_STATE> OverlappingBlobs;
+
 	UPROPERTY(EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	TArray<UBlobComponent*> OverlappingBlobs;
+	TMap<UBlobComponent*, FPendingInteraction> PendingInteractions;*/
+
+
+
 
 
 
@@ -93,14 +120,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TArray<FBlobElement> Composition;
-	//TMap<E_ELEMENT, int> composition;
 
-	E_INTERRACTION_TYPE InteractionMatrix[static_cast<int32>(4)][static_cast<int32>(4)];
-
-	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	
-	/** Please add a function description */
+	UFUNCTION(BlueprintCallable, Category = "Blob Initialization")
+	void InitializeBlobComposition(int32 EarthValue, int32 WaterValue, int32 FireValue, int32 AirValue);
 	UFUNCTION(BlueprintCallable)
 	void interractElement();
 	UFUNCTION(BlueprintCallable)
@@ -115,18 +138,6 @@ public:
 	int chooseAction(E_ELEMENT	TargetElement, E_PLAYABLE	playability);
 	UFUNCTION(BlueprintCallable)
 	void setElementConfig(E_ELEMENT element, E_PLAYABLE	playability, E_MAPPED_AUTHORIZATION  Authorization, int Value);
-
 	UFUNCTION(BlueprintCallable)
-	void manageOnHitInteraction(UBlobComponent* TargetBlobComponent);
-
-	UFUNCTION(BlueprintCallable)
-	void addBlobInterraction(AActor* Actor);
-
-	UFUNCTION(BlueprintCallable)
-	void removeBlobInterraction(AActor* Actor);
-
-	UFUNCTION()
-	E_INTERRACTION_TYPE determineInteraction(E_ELEMENT elementBlob1, E_ELEMENT elementBlob2);
-
-			
+	E_ELEMENT getElementInInteraction();
 };

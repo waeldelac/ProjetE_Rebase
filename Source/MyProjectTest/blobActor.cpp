@@ -11,10 +11,10 @@ AblobActor::AblobActor()
 	PrimaryActorTick.bCanEverTick = true;
 	BlobComponent = CreateDefaultSubobject<UBlobComponent>(TEXT("BlobComponent"));
 	BlobComponent->SetIsReplicated(true);
-	BlobComponent->setElementConfig(E_ELEMENT::EARTH, E_PLAYABLE::NORMAL, E_MAPPED_AUTHORIZATION::ALL_ALLOWED, 100);
-	BlobComponent->setElementConfig(E_ELEMENT::WATER, E_PLAYABLE::NORMAL, E_MAPPED_AUTHORIZATION::ALL_ALLOWED, 100);
-	BlobComponent->setElementConfig(E_ELEMENT::FIRE, E_PLAYABLE::NORMAL, E_MAPPED_AUTHORIZATION::ALL_ALLOWED, 100);
-	BlobComponent->setElementConfig(E_ELEMENT::AIR, E_PLAYABLE::NORMAL, E_MAPPED_AUTHORIZATION::ALL_ALLOWED, 100);
+	BlobComponent->setElementConfig(E_ELEMENT::EARTH, E_PLAYABLE::NORMAL, E_MAPPED_AUTHORIZATION::ALL_ALLOWED, 0);
+	BlobComponent->setElementConfig(E_ELEMENT::WATER, E_PLAYABLE::NORMAL, E_MAPPED_AUTHORIZATION::ALL_ALLOWED, 0);
+	BlobComponent->setElementConfig(E_ELEMENT::FIRE, E_PLAYABLE::NORMAL, E_MAPPED_AUTHORIZATION::ALL_ALLOWED, 0);
+	BlobComponent->setElementConfig(E_ELEMENT::AIR, E_PLAYABLE::NORMAL, E_MAPPED_AUTHORIZATION::ALL_ALLOWED, 0);
 
 }
 

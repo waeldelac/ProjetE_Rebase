@@ -8,16 +8,6 @@
 #include "BlobInterface.h"
 #include "blobActor.generated.h"
 
-UENUM(BlueprintType)
-enum class E_BlobType : uint8
-{
-	TREE UMETA(DisplayName = "Tree"),
-	GROUND UMETA(DisplayName = "Ground"),
-	MUD UMETA(DisplayName = "Mud"),
-	ANIMAL UMETA(DisplayName = "Animal"),
-	HUMAN UMETA(DisplayName = "Human"),
-
-};
 
 UCLASS()
 class MYPROJECTTEST_API AblobActor : public AActor, public IBlobInterface
@@ -27,13 +17,11 @@ class MYPROJECTTEST_API AblobActor : public AActor, public IBlobInterface
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UBlobComponent* BlobComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
-	E_BlobType BlobType;
 
-	
 public:	
 	// Sets default values for this actor's properties
 	AblobActor();
+
 
 protected:
 	// Called when the game starts or when spawned

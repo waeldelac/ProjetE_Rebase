@@ -17,30 +17,12 @@ UBlobComponent::UBlobComponent()
 	{
 		FBlobElement NewPair;
 		NewPair.Element = static_cast<E_ELEMENT>(ElementIndex);
-		NewPair.Value = 100;
+		NewPair.Value = 0;
 		Composition.Add(NewPair);
 	}
 
 
-	InteractionMatrix[static_cast<int32>(E_ELEMENT::EARTH)][static_cast<int32>(E_ELEMENT::EARTH)] = E_INTERRACTION_TYPE::COLLISION;
-	InteractionMatrix[static_cast<int32>(E_ELEMENT::EARTH)][static_cast<int32>(E_ELEMENT::WATER)] = E_INTERRACTION_TYPE::NOTHING_HAPPEN;
-	InteractionMatrix[static_cast<int32>(E_ELEMENT::EARTH)][static_cast<int32>(E_ELEMENT::FIRE)] = E_INTERRACTION_TYPE::TRANSFERT_TO_NEXT_ELEM;
-	InteractionMatrix[static_cast<int32>(E_ELEMENT::EARTH)][static_cast<int32>(E_ELEMENT::AIR)] = E_INTERRACTION_TYPE::DESTROY;
-
-	InteractionMatrix[static_cast<int32>(E_ELEMENT::WATER)][static_cast<int32>(E_ELEMENT::EARTH)] = E_INTERRACTION_TYPE::NOTHING_HAPPEN;
-	InteractionMatrix[static_cast<int32>(E_ELEMENT::WATER)][static_cast<int32>(E_ELEMENT::WATER)] = E_INTERRACTION_TYPE::NOTHING_HAPPEN;
-	InteractionMatrix[static_cast<int32>(E_ELEMENT::WATER)][static_cast<int32>(E_ELEMENT::FIRE)] = E_INTERRACTION_TYPE::AIR_TRANSFORMATION;
-	InteractionMatrix[static_cast<int32>(E_ELEMENT::WATER)][static_cast<int32>(E_ELEMENT::AIR)] = E_INTERRACTION_TYPE::ICE_GENERATION;
-
-	InteractionMatrix[static_cast<int32>(E_ELEMENT::FIRE)][static_cast<int32>(E_ELEMENT::EARTH)] = E_INTERRACTION_TYPE::TRANSFERT_TO_NEXT_ELEM;
-	InteractionMatrix[static_cast<int32>(E_ELEMENT::FIRE)][static_cast<int32>(E_ELEMENT::WATER)] = E_INTERRACTION_TYPE::DESTROY;
-	InteractionMatrix[static_cast<int32>(E_ELEMENT::FIRE)][static_cast<int32>(E_ELEMENT::FIRE)] = E_INTERRACTION_TYPE::NOTHING_HAPPEN;
-	InteractionMatrix[static_cast<int32>(E_ELEMENT::FIRE)][static_cast<int32>(E_ELEMENT::AIR)] = E_INTERRACTION_TYPE::FIRE_GENERATION;
-
-	InteractionMatrix[static_cast<int32>(E_ELEMENT::AIR)][static_cast<int32>(E_ELEMENT::EARTH)] = E_INTERRACTION_TYPE::NOTHING_HAPPEN;
-	InteractionMatrix[static_cast<int32>(E_ELEMENT::AIR)][static_cast<int32>(E_ELEMENT::WATER)] = E_INTERRACTION_TYPE::NOTHING_HAPPEN;
-	InteractionMatrix[static_cast<int32>(E_ELEMENT::AIR)][static_cast<int32>(E_ELEMENT::FIRE)] = E_INTERRACTION_TYPE::DESTROY;
-	InteractionMatrix[static_cast<int32>(E_ELEMENT::AIR)][static_cast<int32>(E_ELEMENT::AIR)] = E_INTERRACTION_TYPE::THUNDER_GENERATION;
+	
 
 }
 
@@ -65,17 +47,30 @@ void UBlobComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	for (auto TargetBlobComponent : OverlappingBlobs)
+}
+
+void UBlobComponent::InitializeBlobComposition(int32 EarthValue, int32 WaterValue, int32 FireValue, int32 AirValue)
+{
+	for (FBlobElement& Pair : Composition)
 	{
-		if (TargetBlobComponent != NULL)
+		switch (Pair.Element)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Interraction")));
-			manageOnHitInteraction(TargetBlobComponent);
+		case E_ELEMENT::EARTH:
+			Pair.Value = EarthValue;
+			break;
+		case E_ELEMENT::WATER:
+			Pair.Value = WaterValue;
+			break;
+		case E_ELEMENT::FIRE:
+			Pair.Value = FireValue;
+			break;
+		case E_ELEMENT::AIR:
+			Pair.Value = AirValue;
+			break;
+		default:
+			break; // Pas d'action pour d'autres éléments (ou éléments non pris en charge)
 		}
 	}
-	
-
-	// ...
 }
 
 void UBlobComponent::interractElement()
@@ -178,53 +173,33 @@ void UBlobComponent::setElementConfig(E_ELEMENT element, E_PLAYABLE	playability,
 	}
 }
 
-void UBlobComponent::manageOnHitInteraction(UBlobComponent* TargetBlobComponent) {
-	for (FBlobElement& myComposition : Composition)
+E_ELEMENT UBlobComponent::getElementInInteraction()
+{
+	for (FBlobElement& CompositionItem : Composition)
 	{
-		if (myComposition.Value > 0)
+		if (CompositionItem.Value > 0)
 		{
-			for (FBlobElement& TargetComposition : TargetBlobComponent->Composition)
-			{
-				if (TargetComposition.Value > 0)
-				{
-					E_INTERRACTION_TYPE interractionToApply = determineInteraction(myComposition.Element, TargetComposition.Element);
-					//If interact for the current blob1 element must stop -> break the loop
-					bool shouldBreak = false;
-					switch (interractionToApply)
-					{
-					case E_INTERRACTION_TYPE::COLLISION:
-					case E_INTERRACTION_TYPE::NOTHING_HAPPEN:
-						return;
-					case E_INTERRACTION_TYPE::TRANSFERT_TO_NEXT_ELEM:
-						break;
-					case E_INTERRACTION_TYPE::DESTROY:
-						decrementElemValue(1, myComposition.Element);
-						return;
-					case E_INTERRACTION_TYPE::AIR_TRANSFORMATION:
-						incrementElemValue(1, E_ELEMENT::AIR);
-						decrementElemValue(1, myComposition.Element);
-						return;
-					case E_INTERRACTION_TYPE::FIRE_GENERATION:
-						incrementElemValue(1, E_ELEMENT::FIRE);
-						return;
-					default:
-						break;
-					}
-				}
-			}
+			return CompositionItem.Element;
+		}
+	}
+	return E_ELEMENT::AIR;
+}
+
+
+/*
+void UBlobComponent::addBlobInterraction(AActor* Actor)
+{
+	if (IBlobInterface* BlobInterface = Cast<IBlobInterface>(Actor))
+	{
+		UBlobComponent* TargetBlobComponent = BlobInterface->getBlobComponent();
+
+		if (TargetBlobComponent && !OverlappingBlobs.Contains(TargetBlobComponent))
+		{
+			OverlappingBlobs.Add(TargetBlobComponent, E_INTERACTION_STATE::NotReady);
 		}
 	}
 }
 
-void UBlobComponent::addBlobInterraction(AActor* Actor)
-{
-	UBlobComponent* TargetBlobComponent = Cast<IBlobInterface>(Actor)->getBlobComponent();
-
-	if (TargetBlobComponent && !OverlappingBlobs.Contains(TargetBlobComponent))
-	{
-		OverlappingBlobs.Add(TargetBlobComponent);
-	}
-}
 
 void UBlobComponent::removeBlobInterraction(AActor* Actor)
 {
@@ -233,11 +208,7 @@ void UBlobComponent::removeBlobInterraction(AActor* Actor)
 	{
 		OverlappingBlobs.Remove(TargetBlobComponent);
 	}
-}
+}*/
 
-E_INTERRACTION_TYPE UBlobComponent::determineInteraction(E_ELEMENT ElementBlob1, E_ELEMENT ElementBlob2) {
 
-	return InteractionMatrix[static_cast<int32>(ElementBlob1)][static_cast<int32>(ElementBlob2)];
-
-}
 
